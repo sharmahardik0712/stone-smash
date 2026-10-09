@@ -1,0 +1,34 @@
+{
+  "name": "stone-smash",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Endless arcade game: slide a cannon, smash falling stones before they hit the ground.",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host",
+    "test": "vitest run",
+    "test:bot": "vitest run tests/bot",
+    "test:e2e": "playwright test",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "tune": "tsx scripts/sweep.ts"
+  },
+  "dependencies": {
+    "phaser": "^3.90.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.30.0",
+    "@playwright/test": "^1.54.0",
+    "@types/node": "^22.20.5",
+    "eslint": "^9.30.0",
+    "prettier": "^3.6.0",
+    "typescript": "5.8",
+    "typescript-eslint": "^8.35.0",
+    "vite": "^6.4.4",
+    "vitest": "^3.2.7",
+    "tsx": "^4.23.15"
+  }
+}
