@@ -28,13 +28,7 @@ Serve over HTTPS (all of these hosts do). Before going live, check `npm run prev
 
 The top 51 scores worldwide live in a Cloudflare D1 database. `worker/index.ts` serves the game from `dist/` and adds `GET /api/scores` (top 51) and `POST /api/scores` (submit). After each submission only the best 51 rows are kept (ties go to the earlier score). Names are 1-12 letters, numbers or spaces; anything else is rejected on both the game and the server. The table is created automatically on first use.
 
-**One-time setup** (creates the database on your Cloudflare account):
-
-```bash
-npx wrangler d1 create stone-smash-scores
-```
-
-Then add the `d1_databases` block shown in the comment at the end of `wrangler.jsonc`, with the printed `database_id`, and push. Until then the game deploys and runs normally and simply skips the scoreboard (`/api/scores` answers 503).
+**Setup:** done. The database `stone-smash-scores` is bound as `DB` in `wrangler.jsonc`. To recreate it elsewhere, run `npx wrangler d1 create stone-smash-scores` and put the new `database_id` in `wrangler.jsonc`. Without a bound database the game still runs and simply skips the scoreboard (`/api/scores` answers 503).
 
 **Looking at the data:** Cloudflare dashboard → Storage & Databases → D1 → `stone-smash-scores` (browse, edit, delete rows, run SQL), or from this folder:
 
