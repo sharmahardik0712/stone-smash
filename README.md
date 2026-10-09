@@ -20,6 +20,8 @@ Other scripts: `npm run test:bot` (bot tests only), `npm run tune` (difficulty-c
 | Netlify / Cloudflare Pages / Vercel | `npm run build`                                                                  | `dist`        |
 | GitHub Pages                        | `npm run build`, then publish `dist` (e.g. with `actions/upload-pages-artifact`) | `dist`        |
 
+**Cloudflare Workers (Workers Builds):** `wrangler.jsonc` serves `dist/` as static assets. In the project's build settings, set **Build command** to `npm run build` and keep **Deploy command** as `npx wrangler deploy`. If the build command is left empty, `dist/` is never created and the deploy fails.
+
 Serve over HTTPS (all of these hosts do). Before going live, check `npm run preview` on a real phone on the same network (it prints a LAN URL).
 
 ## Architecture

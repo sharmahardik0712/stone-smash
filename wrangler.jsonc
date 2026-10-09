@@ -1,0 +1,9 @@
+// Cloudflare deploy config. The game is fully static (Vite builds it into dist/),
+// so the Worker only serves those files: no server code, no Vite plugin needed.
+{
+  "name": "stone-smash",
+  "compatibility_date": "2026-10-06",
+  "assets": {
+    "directory": "./dist"
+  }
+}
