@@ -1,4 +1,4 @@
-import { CONFIG, POWER_UP_KINDS, type PowerUpKind, type StoneType } from '../config/gameConfig';
+import { BIG, CONFIG, TIER, POWER_UP_KINDS, type PowerUpKind, type StoneType } from '../config/gameConfig';
 import { int, next, range } from './rng';
 import type { World } from './world';
 
@@ -89,12 +89,14 @@ export function dropFromKill(world: World, tier: number, type: StoneType, x: num
     spawnPickup(world, 'powerUp', POWER_UP_KINDS[int(world.rng, POWER_UP_KINDS.length)], x, y, 0, -120);
     return;
   }
-  if (tier === 0) {
-    for (let i = 0; i < CONFIG.coins.perBig; i++) {
+  if (tier <= BIG) {
+    // Big drops 1 coin; each giant size up drops one more (Boulder 2 .. Titan Rock 4).
+    const count = CONFIG.coins.perBig * (BIG - tier + 1);
+    for (let i = 0; i < count; i++) {
       spawnPickup(world, 'coin', 'spread', x, y, range(world.rng, -60, 60), -CONFIG.coin.popSpeed);
     }
   }
-  if (tier <= 1 && next(world.rng) < CONFIG.powerUps.dropChance) {
+  if (tier <= TIER.medium && next(world.rng) < CONFIG.powerUps.dropChance) {
     spawnPickup(world, 'powerUp', POWER_UP_KINDS[int(world.rng, POWER_UP_KINDS.length)], x, y, 0, -120);
   }
 }

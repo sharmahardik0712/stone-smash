@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CONFIG } from '../../src/config/gameConfig';
+import { BIG, CONFIG, SMALLEST } from '../../src/config/gameConfig';
 import { activatePowerUp } from '../../src/sim/powerups';
 import { spawnStone } from '../../src/sim/stones';
 import { createWorld, step } from '../../src/sim/world';
@@ -28,15 +28,15 @@ describe('power-ups and lives', () => {
     const w = createWorld({ seed: 1, manualFire: true });
     w.director.lastLifeLostT = 1e9; // block spawning
     activatePowerUp(w, 'shield');
-    spawnStone(w, 2, 'normal', 100, CONFIG.groundY - 10, 0, 300);
+    spawnStone(w, SMALLEST, 'normal', 100, CONFIG.groundY - 10, 0, 300);
     step(w, idle, dt);
     expect(w.lives).toBe(3);
     expect(w.power.shield).toBe(false);
     w.invulnerable = 0;
-    spawnStone(w, 2, 'normal', 100, CONFIG.groundY - 10, 0, 300);
+    spawnStone(w, SMALLEST, 'normal', 100, CONFIG.groundY - 10, 0, 300);
     step(w, idle, dt);
     expect(w.lives).toBe(2);
-    spawnStone(w, 2, 'normal', 200, CONFIG.groundY - 10, 0, 300);
+    spawnStone(w, SMALLEST, 'normal', 200, CONFIG.groundY - 10, 0, 300);
     step(w, idle, dt);
     expect(w.lives).toBe(2); // landed during invulnerability
   });
@@ -45,7 +45,7 @@ describe('power-ups and lives', () => {
     const w = createWorld({ seed: 1, fixedD: 1, manualFire: true });
     w.director.lastLifeLostT = 1e9;
     activatePowerUp(w, 'freeze');
-    const s = spawnStone(w, 0, 'normal', 100, 200, 0, 0)!;
+    const s = spawnStone(w, BIG, 'normal', 100, 200, 0, 0)!;
     for (let i = 0; i < 120; i++) step(w, idle, dt);
     expect(s.vy).toBeCloseTo(CONFIG.difficulty.fallSpeed.max * CONFIG.powerUps.freezeFactor);
   });
@@ -54,7 +54,7 @@ describe('power-ups and lives', () => {
     const w = createWorld({ seed: 1, manualFire: true });
     w.lives = 1;
     w.director.lastLifeLostT = 1e9;
-    spawnStone(w, 2, 'normal', 100, CONFIG.groundY - 10, 0, 300);
+    spawnStone(w, SMALLEST, 'normal', 100, CONFIG.groundY - 10, 0, 300);
     step(w, idle, dt);
     expect(w.gameOver).toBe(true);
   });

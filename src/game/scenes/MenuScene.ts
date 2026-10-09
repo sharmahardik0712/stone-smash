@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { cannonDef, CONFIG, STONE_TYPES } from '../../config/gameConfig';
+import { BIG, cannonDef, CONFIG, STONE_TYPES } from '../../config/gameConfig';
 import { app } from '../app';
 import { applyLayout } from '../layout';
 import { UI } from '../palette';
@@ -63,7 +63,7 @@ export class MenuScene extends Phaser.Scene {
   private decorStones(): void {
     for (let i = 0; i < 6; i++) {
       const type = STONE_TYPES[i % STONE_TYPES.length];
-      const tier = i % 3;
+      const tier = BIG + (i % 3);
       const img = this.add
         .image(80 + ((i * 131) % 560), -80, stoneKey(type, tier, app.settings.colorblind))
         .setAlpha(0.55)

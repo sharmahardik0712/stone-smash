@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { BIG, TIER } from '../../src/config/gameConfig';
 import { comboMultiplier, pointsForKill, registerKill, timeMultiplier } from '../../src/sim/scoring';
 import { createWorld } from '../../src/sim/world';
 
@@ -16,8 +17,9 @@ describe('scoring', () => {
   });
 
   it('points = base x combo x time', () => {
-    expect(pointsForKill(0, 0, 0)).toBe(30);
-    expect(pointsForKill(1, 5, 60)).toBe(Math.round(20 * 1.5 * 1.1));
+    expect(pointsForKill(BIG, 0, 0)).toBe(30);
+    expect(pointsForKill(TIER.titanRock, 0, 0)).toBe(100);
+    expect(pointsForKill(TIER.medium, 5, 60)).toBe(Math.round(20 * 1.5 * 1.1));
   });
 
   it('kills within 1.5 s chain the combo; a gap resets it', () => {

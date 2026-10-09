@@ -28,7 +28,7 @@ interface PickupView {
   sprite: Phaser.GameObjects.Image;
 }
 
-const HP_FONT_SIZE = [44, 36, 30];
+const HP_FONT_SIZE = [56, 52, 48, 44, 36, 30]; // by tier, Titan Rock .. Small
 
 export class WorldRenderer {
   private stones: StoneView[] = [];

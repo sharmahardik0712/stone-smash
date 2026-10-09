@@ -15,6 +15,7 @@ export type SimEventType =
   | 'powerUpPicked'
   | 'coinPicked'
   | 'score'
+  | 'newTier' // a giant tier unlocked (tier = the new tier)
   | 'levelUp' // in-run cannon level gained (value = new level)
   | 'levelDown' // level lost with a life (value = new level)
   | 'gameOver';

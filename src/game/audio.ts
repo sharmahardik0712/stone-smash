@@ -105,7 +105,9 @@ export class Audio {
   }
 
   split(tier: number, combo: number): void {
-    const f = (tier === 0 ? 140 : 200) * Math.pow(2, Math.min(combo, 20) / 12);
+    // Lower thud for bigger stones (tier 0 = Titan Rock .. 3 = Big).
+    const base = tier <= 3 ? 80 + tier * 20 : 200;
+    const f = base * Math.pow(2, Math.min(combo, 20) / 12);
     this.tone(f, 0.18, 'sine', 0.35, f * 0.5);
     this.noise(0.18, 0.22, 1400);
   }
@@ -154,6 +156,13 @@ export class Audio {
     [0, 4, 7, 12, 16].forEach((st, i) =>
       this.tone(root * Math.pow(2, st / 12), 0.12, 'square', 0.07, undefined, i * 0.05),
     );
+  }
+
+  /** A giant tier unlocked: deep rumble plus a rising call. */
+  newTier(): void {
+    this.tone(70, 0.6, 'sine', 0.5, 45);
+    this.noise(0.6, 0.3, 600);
+    [392, 523, 659].forEach((f, i) => this.tone(f, 0.16, 'square', 0.06, undefined, 0.15 + i * 0.09));
   }
 
   click(): void {

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { median, runBot } from './bot';
 
+const MAX_UPGRADES = { fireRate: 5, cannonSpeed: 5, powerDuration: 5 };
+
 const SEEDS = Array.from({ length: 50 }, (_, i) => 1000 + i * 7919);
 
 describe('bot survival ("never unplayable" proof)', () => {
@@ -27,5 +29,22 @@ describe('bot survival ("never unplayable" proof)', () => {
     const coins = median(results.map((r) => r.coins));
     console.log(`median coins in a 3-minute bot run: ${coins}`);
     expect(coins).toBeGreaterThanOrEqual(15);
+  });
+
+  it('runs end: Classic lasts about 6-9 minutes, a maxed Titan about 10-15 (never 25+)', () => {
+    const seeds = SEEDS.slice(0, 12);
+    const classic = seeds.map((seed) => runBot({ seed }, 1800).survivedSec);
+    const titan = seeds.map(
+      (seed) => runBot({ seed, cannon: 'titan', upgrades: MAX_UPGRADES }, 1800).survivedSec,
+    );
+    console.log(
+      `normal run medians: Classic ${(median(classic) / 60).toFixed(1)} min, ` +
+        `maxed Titan ${(median(titan) / 60).toFixed(1)} min (longest ${(Math.max(...titan) / 60).toFixed(1)})`,
+    );
+    expect(median(classic)).toBeGreaterThanOrEqual(5.5 * 60);
+    expect(median(classic)).toBeLessThanOrEqual(9.5 * 60);
+    expect(median(titan)).toBeGreaterThanOrEqual(10 * 60);
+    expect(median(titan)).toBeLessThanOrEqual(15 * 60);
+    expect(Math.max(...titan)).toBeLessThan(25 * 60);
   });
 });

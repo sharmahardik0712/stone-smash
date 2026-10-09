@@ -5,7 +5,7 @@ import Phaser from 'phaser';
 import { CONFIG } from '../config/gameConfig';
 import { app } from './app';
 import { FONT, UI, stoneColors } from './palette';
-import type { StoneType } from '../config/gameConfig';
+import { BIG, type StoneType } from '../config/gameConfig';
 
 interface FloatText {
   text: Phaser.GameObjects.Text;
@@ -85,12 +85,14 @@ export class Effects {
   splitBurst(x: number, y: number, tier: number, type: StoneType): void {
     const c = stoneColors(type, tier, app.settings.colorblind);
     this.chips.particleTint = c.base;
-    this.chips.explode(tier === 0 ? 14 : 9, x, y);
+    // Bigger stones break with more debris and a heavier shake.
+    const weight = Math.max(0, BIG - tier + 1); // Big = 1 .. Titan Rock = 4; medium/small = 0
+    this.chips.explode(weight > 0 ? 10 + weight * 4 : 9, x, y);
     this.dust.particleTint = c.light;
-    this.dust.explode(tier === 0 ? 10 : 6, x, y);
-    if (tier === 0) {
-      this.shake(0.008, 140);
-      this.hitStop = Math.max(this.hitStop, 0.04);
+    this.dust.explode(weight > 0 ? 8 + weight * 3 : 6, x, y);
+    if (weight > 0) {
+      this.shake(0.006 + weight * 0.002, 120 + weight * 30);
+      this.hitStop = Math.max(this.hitStop, 0.03 + weight * 0.01);
     }
   }
 

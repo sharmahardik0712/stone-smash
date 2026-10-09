@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { CONFIG, type CannonDef } from '../../config/gameConfig';
+import { BIG, CONFIG, SMALLEST, TIER_NAMES, type CannonDef } from '../../config/gameConfig';
 import { liveStats, newlyEarned, withUnlocked } from '../../utils/progress';
 import { createWorld, step, type World } from '../../sim/world';
 import { app } from '../app';
@@ -7,7 +7,7 @@ import { applyLayout, isPhoneLandscape } from '../layout';
 import { Effects } from '../effects';
 import { Hud } from '../hud';
 import { InputController } from '../input';
-import { LEVEL_COLORS, POWER_COLORS, POWER_LABELS } from '../palette';
+import { LEVEL_COLORS, POWER_COLORS, POWER_LABELS, stoneColors } from '../palette';
 import { WorldRenderer } from '../render/worldRenderer';
 import { drawSky, label } from '../ui';
 
@@ -179,7 +179,7 @@ export class GameScene extends Phaser.Scene {
           audio.bomb();
           break;
         case 'score': {
-          const big = e.tier === 0;
+          const big = e.tier <= BIG;
           fx.floatText(e.x, e.y - 30, `+${e.value}`, e.combo > 0 ? '#ffe08a' : '#ffffff', big ? 36 : 28);
           const cheer = COMBO_CHEERS[e.combo];
           if (cheer) fx.floatText(CONFIG.width / 2, 300, cheer, '#ffd166', 56);
@@ -209,6 +209,9 @@ export class GameScene extends Phaser.Scene {
             this.lastCoinSound = this.time.now;
             audio.coin();
           }
+          break;
+        case 'newTier':
+          this.announceTier(e.tier);
           break;
         case 'levelUp':
           fx.floatText(
@@ -296,6 +299,18 @@ ${c.name}`,
     }
   }
 
+  /** Banner for a newly unlocked giant tier ("Boulders incoming!"). */
+  private announceTier(tier: number): void {
+    const c = stoneColors('normal', tier, app.settings.colorblind);
+    const name = TIER_NAMES[tier].toUpperCase();
+    const t = label(this, CONFIG.width / 2, 420, `${name}S\nINCOMING!`, 56, '#ffffff').setDepth(70);
+    t.setStroke('#' + c.shade.toString(16).padStart(6, '0'), 12);
+    this.tweens.add({ targets: t, scale: { from: 0.4, to: 1 }, duration: 350, ease: 'Back.Out' });
+    this.tweens.add({ targets: t, alpha: 0, delay: 1800, duration: 500, onComplete: () => t.destroy() });
+    this.effects.shake(0.006, 400);
+    app.audio.newTier();
+  }
+
   private checkBreakReminder(): void {
     if (app.breakReminderShown || app.sessionPlaySec < CONFIG.health.breakReminderSec) return;
     app.breakReminderShown = true;
@@ -351,7 +366,14 @@ ${c.name}`,
             vx: 0,
             vy: 0,
           });
-          Object.assign(s, { tier: 2, radius: 18, hp: 1, maxHp: 1, armor: 0, type: 'normal' });
+          Object.assign(s, {
+            tier: SMALLEST,
+            radius: CONFIG.stone.radii[SMALLEST],
+            hp: 1,
+            maxHp: 1,
+            armor: 0,
+            type: 'normal',
+          });
         }
       },
     };

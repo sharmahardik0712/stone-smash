@@ -6,6 +6,7 @@ import {
   CONFIG,
   POWER_UP_KINDS,
   STONE_TYPES,
+  TIER_COUNT,
   type CannonId,
   type PowerUpKind,
   type StoneType,
@@ -125,7 +126,7 @@ function drawStone(scene: Phaser.Scene, type: StoneType, tier: number, cb: boole
   g.fillEllipse(c - r * 0.35, c - r * 0.42, r * 0.5, r * 0.28);
   // Speckles.
   g.fillStyle(col.shade, 0.6);
-  for (let i = 0; i < 3 + tier; i++) {
+  for (let i = 0; i < 3 + Math.round(r / 20); i++) {
     const a = noise(i, salt + 11) * Math.PI * 2;
     const d = r * (0.25 + noise(i, salt + 5) * 0.45);
     g.fillCircle(c + Math.cos(a) * d, c + Math.sin(a) * d, Math.max(1.5, r * 0.06));
@@ -233,9 +234,11 @@ function drawPowerIcon(g: Phaser.GameObjects.Graphics, kind: PowerUpKind, c: num
 
 export function generateTextures(scene: Phaser.Scene): void {
   for (const cb of [false, true]) {
-    for (const type of STONE_TYPES) for (let tier = 0; tier < 3; tier++) drawStone(scene, type, tier, cb);
+    for (const type of STONE_TYPES) {
+      for (let tier = 0; tier < TIER_COUNT; tier++) drawStone(scene, type, tier, cb);
+    }
   }
-  for (let tier = 0; tier < 3; tier++) {
+  for (let tier = 0; tier < TIER_COUNT; tier++) {
     const r = CONFIG.stone.radii[tier];
     drawRing(scene, `armor-${tier}-0`, r + 4, armorColor(false), Math.max(5, r * 0.18));
     drawRing(scene, `armor-${tier}-1`, r + 4, armorColor(true), Math.max(5, r * 0.18));

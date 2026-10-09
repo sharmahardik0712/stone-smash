@@ -1,4 +1,4 @@
-import { CONFIG, type StoneType } from '../config/gameConfig';
+import { BIG, CONFIG, type StoneType } from '../config/gameConfig';
 import { gainXp } from './cannon';
 import type { World } from './world';
 
@@ -35,7 +35,7 @@ export function registerKill(world: World, tier: number, _type: StoneType, x: nu
   s.lastKillT = world.t;
   s.kills++;
   if (s.combo > s.bestCombo) s.bestCombo = s.combo;
-  if (tier === 0) world.bigKills++;
+  if (tier <= BIG) world.bigKills++;
   const pts = pointsForKill(tier, s.combo, world.t);
   s.score += pts;
   const e = world.events.push('score', x, y);

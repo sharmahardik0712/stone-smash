@@ -41,19 +41,25 @@ Serve over HTTPS (all of these hosts do). Before going live, check `npm run prev
 
 The playfield is always 720x1280, so the sim is identical and fair on every device. On taller phones the canvas grows (`src/game/layout.ts`). Extra height goes first to a HUD band above the playfield, so the HUD never covers stones, then to thumb room below the ground. Drags start anywhere below the HUD and move the cannon relative to the finger. Turning a phone sideways shows a rotate message and pauses the run.
 
+## Giants and overtime (runs always end)
+
+- **Giants:** a new, bigger stone unlocks every 2 minutes. Boulder at 2:00, Mountain at 4:00, Titan Rock at 6:00, each with an "incoming" banner. Each splits into two of the previous biggest, so a family grows in powers of 2 (Big = 7 stones, Boulder 15, Mountain 31, Titan Rock 63). Giants fall slower, their pieces keep that slow fall, and their pieces pop higher on breaking, so the extra work is spread out rather than landing all at once. Giants drop more coins (Boulder 2, Mountain 3, Titan Rock 4).
+- **Overtime:** from 6:00 the HP budget (+30%/min), stone toughness (+0.3 HP scale/min) and fall speed (+10 px/s per min, capped at 380) keep rising with no limit, so every run ends. The first 6 minutes are unchanged.
+- **Run length** (bot, 20 seeds; `npx tsx scripts/runlength.ts`): Classic with no upgrades lasts a median of about 7 min, a fully upgraded Titan about 14 min, with Blaster, Twin and Storm in between. A test enforces Classic 5.5 to 9.5 min, maxed Titan 10 to 15 min, and no run past 25 min.
+
 ## Where it differs from the plan, and why
 
 The plan says to tune the starting values against the bot test (`npm run tune` sweeps the ceiling; `npx tsx scripts/cannons.ts` checks every cannon). The bot chases the lowest stone with a 150 ms reaction delay. The current ceiling, tuned for Classic with in-run levels and phone-sized stones:
 
-| Setting                         | Plan         | Now          |
-| ------------------------------- | ------------ | ------------ |
-| `difficulty.budgetHpPerSec.max` | 3.0          | 3.0          |
-| `difficulty.fallSpeed.max`      | 350          | 300          |
-| `difficulty.hpScale.max`        | 1.5          | 1.25         |
-| `stone.splitSideSpeed`          | 140          | 100          |
-| `stone.radii`                   | 40 / 28 / 18 | 46 / 33 / 23 |
+| Setting                          | Plan         | Now          |
+| -------------------------------- | ------------ | ------------ |
+| `difficulty.budgetHpPerSec.max`  | 3.0          | 3.0          |
+| `difficulty.fallSpeed.max`       | 350          | 300          |
+| `difficulty.hpScale.max`         | 1.5          | 1.25         |
+| `stone.splitSideSpeed`           | 140          | 100          |
+| `stone.radii` (Big/Medium/Small) | 40 / 28 / 18 | 46 / 33 / 23 |
 
-With the plan's original numbers, the bot survived a median of 21 s at `d = 1`. Split children spread out and landed before one cannon could clear the family. Now, over 50 seeds with Classic, the median at `d = 1` is the full 10 minutes. At `d = 0.33`, the bot loses 0 lives. A 3-minute run earns about 28 coins (target 25 to 35). Twin, Storm and Titan never lose at `d = 1` in 10 minutes.
+With the plan's original numbers, the bot survived a median of 21 s at `d = 1`. Split children spread out and landed before one cannon could clear the family. Now, over 50 seeds with Classic and with giants arriving on schedule, the median at `d = 1` is about 6 minutes (the plan's bar is 5; `npx tsx scripts/ceiling.ts` shows how giants and overtime each contribute). At `d = 0.33`, the bot loses 0 lives. A 3-minute run earns about 24 coins (target 25 to 35).
 
 Other decisions the plan left open:
 

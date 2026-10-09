@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { CONFIG } from '../../src/config/gameConfig';
-import { difficultyAt } from '../../src/sim/director';
+import { BIG, CONFIG, SMALLEST, TIER } from '../../src/config/gameConfig';
+import { difficultyAt, overtimeBudgetMult } from '../../src/sim/director';
 import { spawnStone } from '../../src/sim/stones';
 import { createWorld, step } from '../../src/sim/world';
 
@@ -22,8 +22,42 @@ describe('director', () => {
       w.lives = 3; // keep the run alive
       w.gameOver = false;
       const d = w.director;
-      expect(d.budget * d.waveFactor).toBeLessThanOrEqual(CONFIG.difficulty.budgetHpPerSec.max * 1.1 + 1e-9);
-      expect(d.fallSpeed).toBeLessThanOrEqual(CONFIG.difficulty.fallSpeed.max);
+      // Before overtime the budget stays within max x 1.1; overtime only scales that by its multiplier.
+      const cap = CONFIG.difficulty.budgetHpPerSec.max * 1.1 * overtimeBudgetMult(w.t);
+      expect(d.budget * d.waveFactor).toBeLessThanOrEqual(cap + 1e-9);
+      expect(d.fallSpeed).toBeLessThanOrEqual(CONFIG.overtime.fallCap);
+      if (w.t < CONFIG.overtime.startSec)
+        expect(d.fallSpeed).toBeLessThanOrEqual(CONFIG.difficulty.fallSpeed.max);
+    }
+  });
+
+  it('overtime keeps raising the budget after the plateau', () => {
+    expect(overtimeBudgetMult(CONFIG.overtime.startSec)).toBe(1);
+    expect(overtimeBudgetMult(CONFIG.overtime.startSec + 300)).toBeCloseTo(
+      1 + CONFIG.overtime.budgetPerMin * 5,
+    );
+  });
+
+  it('giants unlock on schedule, each announced and sent straight away', () => {
+    const w = createWorld({ seed: 9 });
+    const input = { targetX: 360, fire: true };
+    const announced: number[] = [];
+    const firstSpawn: Record<number, number> = {};
+    while (w.t < 400) {
+      step(w, input, dt);
+      w.lives = 3;
+      w.gameOver = false;
+      for (let i = 0; i < w.events.count; i++) {
+        if (w.events.items[i].type === 'newTier') announced.push(w.events.items[i].tier);
+      }
+      for (const s of w.stones.items) {
+        if (s.active && s.tier < BIG && firstSpawn[s.tier] === undefined) firstSpawn[s.tier] = w.t;
+      }
+    }
+    expect(announced).toEqual([TIER.boulder, TIER.mountain, TIER.titanRock]);
+    for (const tier of [TIER.boulder, TIER.mountain, TIER.titanRock]) {
+      expect(firstSpawn[tier]).toBeGreaterThanOrEqual(CONFIG.giants.unlockAt[tier]);
+      expect(firstSpawn[tier]).toBeLessThan(CONFIG.giants.unlockAt[tier] + 15);
     }
   });
 
@@ -31,7 +65,7 @@ describe('director', () => {
     const w = createWorld({ seed: 3 });
     step(w, { targetX: 360, fire: false }, dt);
     const s = w.stones.items.find((x) => x.active)!;
-    expect(s.tier).toBe(0);
+    expect(s.tier).toBe(BIG);
     expect(s.type).toBe('normal');
     expect(s.x).toBe(CONFIG.width / 2);
     expect(s.hp).toBe(4);
@@ -39,7 +73,8 @@ describe('director', () => {
 
   it('stops spending at the on-screen cap', () => {
     const w = createWorld({ seed: 5, fixedD: 1 });
-    for (let i = 0; i < CONFIG.safety.maxStonesOnScreen; i++) spawnStone(w, 2, 'normal', 100, -2000, 0, 0);
+    for (let i = 0; i < CONFIG.safety.maxStonesOnScreen; i++)
+      spawnStone(w, SMALLEST, 'normal', 100, -2000, 0, 0);
     const before = w.director.spawned;
     for (let i = 0; i < 600; i++) {
       // Pin the decoys far above the screen so they never land.

@@ -1,11 +1,12 @@
-import { CONFIG, type StoneType } from '../config/gameConfig';
+import { BIG, CONFIG, SMALLEST, type StoneType } from '../config/gameConfig';
 import { bounceWalls } from './collision';
 import { dropFromKill } from './powerups';
 import { range, next } from './rng';
 import { registerKill } from './scoring';
 import type { World } from './world';
 
-export type Tier = 0 | 1 | 2;
+/** 0 = Titan Rock (biggest) .. 5 = Small. See TIER in gameConfig. */
+export type Tier = 0 | 1 | 2 | 3 | 4 | 5;
 
 export interface Stone {
   active: boolean;
@@ -23,6 +24,9 @@ export interface Stone {
   maxHp: number;
   armor: number;
   type: StoneType;
+  /** Fall-speed multiplier. Pieces of a giant keep the giant's slow fall, so its family's
+   *  work is spread over time instead of landing all at once. */
+  fallMult: number;
 }
 
 export function makeStone(): Stone {
@@ -41,6 +45,7 @@ export function makeStone(): Stone {
     maxHp: 0,
     armor: 0,
     type: 'normal',
+    fallMult: 1,
   };
 }
 
@@ -52,7 +57,7 @@ export function stoneHp(tier: Tier, hpScale: number): number {
 export function treeHp(tier: Tier, hpScale: number): number {
   let total = 0;
   let count = 1;
-  for (let t = tier; t <= 2; t++) {
+  for (let t = tier; t <= SMALLEST; t++) {
     total += count * stoneHp(t as Tier, hpScale);
     count *= 2;
   }
@@ -95,6 +100,7 @@ export function spawnStone(
   s.hp = s.maxHp = stoneHp(tier, world.director.hpScale);
   s.armor = type === 'armored' ? CONFIG.stone.armorHp : 0;
   s.type = type;
+  s.fallMult = CONFIG.stone.fallMult[tier];
   return s;
 }
 
@@ -119,7 +125,7 @@ export function updateStones(world: World, dt: number): void {
   for (let i = 0; i < items.length; i++) {
     const s = items[i];
     if (!s.active) continue;
-    s.vy = Math.min(s.vy + accel * dt, fall);
+    s.vy = Math.min(s.vy + accel * dt, fall * s.fallMult);
     s.x += s.vx * dt;
     s.y += s.vy * dt;
     bounceWalls(s, CONFIG.width);
@@ -171,13 +177,17 @@ export function killStone(world: World, s: Stone, chain: number): void {
 
   if (type === 'bomb') queueBlast(world, x, y, chain + 1);
 
-  if (tier < 2) {
+  if (tier < SMALLEST) {
     const childTier = (tier + 1) as Tier;
     const childType: StoneType = type === 'bouncy' ? 'bouncy' : 'normal';
     const side = type === 'bouncy' ? CONFIG.stone.bouncySideSpeed : CONFIG.stone.splitSideSpeed;
     const off = s.radius * 0.4;
-    spawnStone(world, childTier, childType, x - off, y, -side, -CONFIG.stone.splitPopSpeed);
-    spawnStone(world, childTier, childType, x + off, y, side, -CONFIG.stone.splitPopSpeed);
+    const familyFall = Math.min(s.fallMult, CONFIG.stone.fallMult[childTier]);
+    const pop = CONFIG.stone.splitPopSpeed * (tier < BIG ? CONFIG.stone.giantPopMult : 1);
+    const a = spawnStone(world, childTier, childType, x - off, y, -side, -pop);
+    const b = spawnStone(world, childTier, childType, x + off, y, side, -pop);
+    if (a) a.fallMult = familyFall;
+    if (b) b.fallMult = familyFall;
     const e = world.events.push('stoneSplit', x, y);
     e.tier = tier;
     e.stoneType = type;

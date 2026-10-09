@@ -32,8 +32,11 @@ export interface StoneColors {
 }
 
 // Plain and armored stones are coloured by size, so colour tells you what splits into what:
-// big (purple) -> medium (teal) -> small (orange).
+// titan rock (red) -> mountain (blue) -> boulder (lime) -> big (purple) -> medium (teal) -> small (orange).
 const BY_SIZE: StoneColors[] = [
+  { base: 0xe5484d, shade: 0xa3262b, light: 0xff9a9d },
+  { base: 0x3b82f6, shade: 0x1d4fb8, light: 0x9cc3ff },
+  { base: 0x84cc16, shade: 0x55870b, light: 0xc6f07a },
   { base: 0x8b5cf6, shade: 0x5b34c4, light: 0xc9b6ff },
   { base: 0x14b8a6, shade: 0x0b7f74, light: 0x86eadc },
   { base: 0xff8a3d, shade: 0xd35f12, light: 0xffc495 },
@@ -47,6 +50,9 @@ const SPECIAL: Partial<Record<StoneType, StoneColors>> = {
 
 // Okabe-Ito based: stays distinct for the common colour vision types.
 const BY_SIZE_CB: StoneColors[] = [
+  { base: 0xd55e00, shade: 0x8f3f00, light: 0xf59a55 },
+  { base: 0x56b4e9, shade: 0x2c86b8, light: 0x9ad4f5 },
+  { base: 0x6b6b78, shade: 0x404048, light: 0xa5a5b2 },
   { base: 0x0072b2, shade: 0x004c78, light: 0x5aa9d6 },
   { base: 0x009e73, shade: 0x006a4d, light: 0x5fcca9 },
   { base: 0xe69f00, shade: 0xa87300, light: 0xffcb5c },

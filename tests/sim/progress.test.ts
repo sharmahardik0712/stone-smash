@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CONFIG } from '../../src/config/gameConfig';
+import { CONFIG, SMALLEST } from '../../src/config/gameConfig';
 import { MAX_RUN_LEVEL } from '../../src/sim/cannon';
 import { registerKill } from '../../src/sim/scoring';
 import { spawnStone } from '../../src/sim/stones';
@@ -25,7 +25,7 @@ describe('in-run cannon levels', () => {
     w.director.lastLifeLostT = 1e9;
     for (let i = 0; i < CONFIG.runLevels.thresholds[2]; i++) registerKill(w, 2, 'normal', 0, 0);
     expect(w.cannon.level).toBe(3);
-    spawnStone(w, 2, 'normal', 100, CONFIG.groundY - 10, 0, 300);
+    spawnStone(w, SMALLEST, 'normal', 100, CONFIG.groundY - 10, 0, 300);
     step(w, idle, dt);
     expect(w.cannon.level).toBe(2);
     expect(w.cannon.xp).toBe(CONFIG.runLevels.thresholds[1]);
