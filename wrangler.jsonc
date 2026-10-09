@@ -3,6 +3,10 @@
 {
   "name": "stone-smash",
   "compatibility_date": "2026-10-06",
+  // Build before every deploy, so it works even if no build command is set in the dashboard.
+  "build": {
+    "command": "npm run build"
+  },
   "assets": {
     "directory": "./dist"
   }
