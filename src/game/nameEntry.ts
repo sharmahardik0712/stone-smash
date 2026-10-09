@@ -17,8 +17,7 @@ const CSS = `
 #ss-name .card { width: 100%; max-width: 360px; background: #1f2340; color: #fff; border-radius: 20px;
   padding: 22px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); text-align: center; }
 #ss-name h2 { margin: 0 0 4px; font-size: 26px; color: #ffd166; }
-#ss-name p { margin: 0 0 6px; font-size: 15px; color: #c9cdf0; }
-#ss-name .warn { margin: 0 0 12px; font-size: 16px; font-weight: 700; color: #ffb627; }
+#ss-name p { margin: 10px 0 8px; font-size: 16px; color: #c9cdf0; }
 #ss-name input { width: 100%; box-sizing: border-box; font-family: inherit; font-weight: 700; font-size: 22px; padding: 12px 14px;
   border-radius: 12px; border: 3px solid #5ec2b7; background: #fff; color: #1f2340; outline: none; }
 #ss-name .hint { margin: 8px 0 0; font-size: 13px; color: #8f93b8; min-height: 18px; }
@@ -45,10 +44,9 @@ export class NameEntry {
     root.innerHTML = `
       <form class="card" autocomplete="off">
         <h2></h2>
-        <p>Pick a nickname for the world scoreboard.</p>
-        <div class="warn">Don't use your real name.</div>
-        <input name="name" maxlength="${NAME_MAX}" placeholder="Nickname" enterkeyhint="done" spellcheck="false" />
-        <div class="hint">Letters, numbers and spaces, up to ${NAME_MAX}.</div>
+        <p>Your name</p>
+        <input name="name" maxlength="${NAME_MAX}" placeholder="Your name" enterkeyhint="done" spellcheck="false" />
+        <div class="hint"></div>
         <div class="row">
           <button type="button" class="skip">Skip</button>
           <button type="submit" class="save">Save</button>
