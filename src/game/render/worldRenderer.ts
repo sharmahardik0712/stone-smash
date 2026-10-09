@@ -2,7 +2,7 @@
 // Reads the sim; never writes to it.
 
 import Phaser from 'phaser';
-import { CONFIG } from '../../config/gameConfig';
+import { CONFIG, type CannonId } from '../../config/gameConfig';
 import type { World } from '../../sim/world';
 import { app } from '../app';
 import { MAX_RUN_LEVEL, levelProgress } from '../../sim/cannon';
@@ -94,6 +94,13 @@ export class WorldRenderer {
       .image(world.cannon.x, CONFIG.cannon.y, 'shield-bubble')
       .setVisible(false)
       .setDepth(22);
+  }
+
+  /** Shows a different cannon (after a mid-run upgrade). */
+  setCannon(id: CannonId): void {
+    this.barrel.setTexture(cannonBarrelKey(id));
+    this.cannonBase.setTexture(cannonBaseKey(id));
+    this.recoil = 1;
   }
 
   /** Visual reaction for a stone that was hit (looked up by sim stone id). */

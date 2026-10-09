@@ -19,6 +19,11 @@ export function createCannon(def: CannonDef): Cannon {
   return { x, px: x, targetX: x, fireTimer: 0.4, def, level: 1, xp: 0 };
 }
 
+/** Swaps the cannon type mid-run (keeps position, in-run level and progress). */
+export function switchCannon(world: World, def: CannonDef): void {
+  world.cannon.def = def;
+}
+
 export function clampCannonX(x: number): number {
   const m = CONFIG.cannon.halfWidth;
   return x < m ? m : x > CONFIG.width - m ? CONFIG.width - m : x;

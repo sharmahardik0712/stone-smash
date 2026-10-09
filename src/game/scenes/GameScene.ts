@@ -1,5 +1,14 @@
 import Phaser from 'phaser';
-import { BIG, CONFIG, SMALLEST, TIER_NAMES, type CannonDef, type CannonId } from '../../config/gameConfig';
+import {
+  BIG,
+  CANNONS,
+  CONFIG,
+  SMALLEST,
+  TIER_NAMES,
+  type CannonDef,
+  type CannonId,
+} from '../../config/gameConfig';
+import { switchCannon } from '../../sim/cannon';
 import { liveStats, newlyEarned, withUnlocked } from '../../utils/progress';
 import { createWorld, step, type World } from '../../sim/world';
 import { app } from '../app';
@@ -278,29 +287,32 @@ export class GameScene extends Phaser.Scene {
       : liveStats(saved, w.t, w.score.kills, w.score.score);
     const earned = newlyEarned(save, stats);
     if (earned.length === 0) return;
-    app.storage.setCannons(
-      withUnlocked(
-        save,
-        earned.map((c) => c.id),
-      ),
+
+    // The strongest cannon just earned becomes the selected one if it beats the current choice,
+    // and (mid-run) replaces the cannon straight away. Never downgrades.
+    const rank = (id: CannonId) => CANNONS.findIndex((c) => c.id === id);
+    const best = earned.reduce((a, b) => (rank(b.id) > rank(a.id) ? b : a));
+    const upgrade = rank(best.id) > rank(save.selected);
+    const next = withUnlocked(
+      save,
+      earned.map((c) => c.id),
     );
-    for (const c of earned) {
-      this.unlockedThisRun.push(c);
-      if (!this.ending) {
-        const t = label(
-          this,
-          CONFIG.width / 2,
-          330,
-          `New cannon unlocked!
-${c.name}`,
-          44,
-          '#ffd166',
-        ).setDepth(70);
-        this.tweens.add({ targets: t, scale: { from: 0.5, to: 1 }, duration: 300, ease: 'Back.Out' });
-        this.tweens.add({ targets: t, alpha: 0, delay: 2200, duration: 500, onComplete: () => t.destroy() });
-        app.audio.powerUp();
-      }
+    app.storage.setCannons(upgrade ? { ...next, selected: best.id } : next);
+
+    for (const c of earned) this.unlockedThisRun.push(c);
+    if (this.ending) return;
+
+    if (upgrade && rank(best.id) > rank(w.cannon.def.id)) {
+      switchCannon(w, best);
+      this.view.setCannon(best.id);
+      this.effects.sparkle(w.cannon.x, CONFIG.cannon.y - 20, 0xffd166);
+      this.effects.floatText(w.cannon.x, CONFIG.cannon.y - 90, best.name.toUpperCase(), '#ffd166', 40);
     }
+    const heading = upgrade ? 'Cannon upgraded!' : 'New cannon unlocked!';
+    const t = label(this, CONFIG.width / 2, 330, `${heading}\n${best.name}`, 44, '#ffd166').setDepth(70);
+    this.tweens.add({ targets: t, scale: { from: 0.5, to: 1 }, duration: 300, ease: 'Back.Out' });
+    this.tweens.add({ targets: t, alpha: 0, delay: 2200, duration: 500, onComplete: () => t.destroy() });
+    app.audio.levelUp(3);
   }
 
   /** Banner for a newly unlocked giant tier ("Boulders incoming!"). */

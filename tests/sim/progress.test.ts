@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { CONFIG, SMALLEST } from '../../src/config/gameConfig';
-import { MAX_RUN_LEVEL } from '../../src/sim/cannon';
+import { cannonDef, CONFIG, SMALLEST } from '../../src/config/gameConfig';
+import { MAX_RUN_LEVEL, switchCannon } from '../../src/sim/cannon';
 import { registerKill } from '../../src/sim/scoring';
 import { spawnStone } from '../../src/sim/stones';
 import { createWorld, step } from '../../src/sim/world';
@@ -35,6 +35,16 @@ describe('in-run cannon levels', () => {
     const w = createWorld({ seed: 1, cannon: 'twin' });
     w.cannon.fireTimer = 0;
     step(w, { targetX: 360, fire: true }, dt);
+    expect(w.bullets.countActive()).toBe(2);
+  });
+
+  it('switching cannon mid-run keeps the level and changes how it fires', () => {
+    const w = createWorld({ seed: 1 });
+    w.cannon.level = 2;
+    switchCannon(w, cannonDef('twin'));
+    w.cannon.fireTimer = 0;
+    step(w, { targetX: 360, fire: true }, dt);
+    expect(w.cannon.level).toBe(2);
     expect(w.bullets.countActive()).toBe(2);
   });
 
