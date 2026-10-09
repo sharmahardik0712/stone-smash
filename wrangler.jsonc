@@ -11,13 +11,11 @@
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS"
-  },
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "stone-smash-scores",
-      // Paste the id printed by: npx wrangler d1 create stone-smash-scores
-      "database_id": "REPLACE_WITH_YOUR_DATABASE_ID"
-    }
-  ]
+  }
+  // World scoreboard: until this is added, the game runs and simply skips the scoreboard.
+  // 1. Run: npx wrangler d1 create stone-smash-scores
+  // 2. Add a comma after the "assets" block above, then paste this with your database_id:
+  // "d1_databases": [
+  //   { "binding": "DB", "database_name": "stone-smash-scores", "database_id": "PASTE_ID_HERE" }
+  // ]
 }

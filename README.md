@@ -34,7 +34,7 @@ The top 51 scores worldwide live in a Cloudflare D1 database. `worker/index.ts` 
 npx wrangler d1 create stone-smash-scores
 ```
 
-Copy the printed `database_id` into `wrangler.jsonc`, replacing `REPLACE_WITH_YOUR_DATABASE_ID`, then push. Deploys fail until the real id is in place.
+Then add the `d1_databases` block shown in the comment at the end of `wrangler.jsonc`, with the printed `database_id`, and push. Until then the game deploys and runs normally and simply skips the scoreboard (`/api/scores` answers 503).
 
 **Looking at the data:** Cloudflare dashboard → Storage & Databases → D1 → `stone-smash-scores` (browse, edit, delete rows, run SQL), or from this folder:
 

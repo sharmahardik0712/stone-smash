@@ -20,7 +20,8 @@ interface D1Database {
   batch(statements: D1PreparedStatement[]): Promise<unknown>;
 }
 interface Env {
-  DB: D1Database;
+  /** Missing until the D1 database is created and bound in wrangler.jsonc. */
+  DB?: D1Database;
   ASSETS: { fetch(request: Request): Promise<Response> };
 }
 
@@ -61,10 +62,10 @@ async function topScores(db: D1Database): Promise<ScoreEntry[]> {
   return results;
 }
 
-async function handleScores(request: Request, env: Env): Promise<Response> {
-  await ensureSchema(env.DB);
+async function handleScores(request: Request, db: D1Database): Promise<Response> {
+  await ensureSchema(db);
 
-  if (request.method === 'GET') return json({ scores: await topScores(env.DB) });
+  if (request.method === 'GET') return json({ scores: await topScores(db) });
 
   if (request.method === 'POST') {
     const text = await request.text();
@@ -78,19 +79,19 @@ async function handleScores(request: Request, env: Env): Promise<Response> {
     const sub = parseSubmission(body);
     if (typeof sub === 'string') return json({ error: sub }, 400);
 
-    const row = await env.DB.prepare(
-      'INSERT INTO scores (name, score, time_sec, cannon) VALUES (?, ?, ?, ?) RETURNING id',
-    )
+    const row = await db
+      .prepare('INSERT INTO scores (name, score, time_sec, cannon) VALUES (?, ?, ?, ?) RETURNING id')
       .bind(sub.name, sub.score, sub.timeSec, sub.cannon)
       .first<{ id: number }>();
     // Keep only the top 51 (ties: the earlier entry stays).
-    await env.DB.prepare(
-      'DELETE FROM scores WHERE id NOT IN (SELECT id FROM scores ORDER BY score DESC, id ASC LIMIT ?)',
-    )
+    await db
+      .prepare(
+        'DELETE FROM scores WHERE id NOT IN (SELECT id FROM scores ORDER BY score DESC, id ASC LIMIT ?)',
+      )
       .bind(MAX_ENTRIES)
       .run();
 
-    const scores = await topScores(env.DB);
+    const scores = await topScores(db);
     const index = row ? scores.findIndex((s) => s.id === row.id) : -1;
     return json({ id: row?.id ?? null, rank: index >= 0 ? index + 1 : null, scores });
   }
@@ -102,8 +103,10 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname === '/api/scores') {
+      // No database bound yet: the game treats this like being offline and skips the scoreboard.
+      if (!env.DB) return json({ error: 'Scoreboard not set up yet.' }, 503);
       try {
-        return await handleScores(request, env);
+        return await handleScores(request, env.DB);
       } catch (err) {
         console.error('scoreboard error', err);
         return json({ error: 'Scoreboard unavailable.' }, 503);
