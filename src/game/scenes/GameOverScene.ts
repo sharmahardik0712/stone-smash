@@ -2,8 +2,11 @@ import Phaser from 'phaser';
 import { CANNONS, CONFIG } from '../../config/gameConfig';
 import { goalProgress, goalText, liveStats } from '../../utils/progress';
 import { comboMultiplier } from '../../sim/scoring';
+import { qualifies } from '../../utils/scoreboard';
 import { app } from '../app';
 import { applyLayout } from '../layout';
+import { fetchScores, submitScore } from '../leaderboard';
+import { NameEntry } from '../nameEntry';
 import { UI } from '../palette';
 import { Button, drawSky, formatTime, label, panel, title } from '../ui';
 import type { RunResult } from './GameScene';
@@ -92,13 +95,66 @@ export class GameOverScene extends Phaser.Scene {
       () => this.scene.start('Shop', { from: 'GameOver', result: r }),
       small,
     );
-    new Button(this, cx + 220, 1030, 'Menu', () => this.scene.start('Menu'), {
-      ...small,
+    new Button(
+      this,
+      cx + 220,
+      1030,
+      'Scores',
+      () => this.scene.start('Scoreboard', { from: 'GameOver', fromData: r, highlightId: r.board?.id }),
+      { ...small, color: 0x14b8a6, shade: 0x0b7f74 },
+    );
+    new Button(this, cx, 1150, 'Menu', () => this.scene.start('Menu'), {
+      width: 300,
+      height: 84,
+      fontSize: 30,
       color: UI.muted,
       shade: 0x6b6f94,
     });
 
+    this.checkScoreboard(r);
+
     this.input.keyboard?.on('keydown-ENTER', () => this.scene.start('Game'));
     this.input.keyboard?.on('keydown-SPACE', () => this.scene.start('Game'));
+  }
+
+  /** If the score makes the world top 51, ask for a name and submit it (once per run). */
+  private checkScoreboard(r: RunResult): void {
+    if (r.board) {
+      this.showRank(r);
+      return;
+    }
+    if (r.score <= 0) return;
+    r.board = { id: null, rank: null };
+    void fetchScores().then((top) => {
+      if (!top || !this.sys.isActive() || !qualifies(r.score, top)) return;
+      const place = top.filter((s) => s.score >= r.score).length + 1;
+      const entry = new NameEntry({
+        rankHint: `World top 51! You're #${place}`,
+        initialName: app.storage.getPlayerName(),
+        onSave: async (name) => {
+          const res = await submitScore({
+            name,
+            score: r.score,
+            timeSec: Math.floor(r.timeSec),
+            cannon: r.cannon,
+          });
+          if (!res) return false;
+          app.storage.setPlayerName(name);
+          r.board = { id: res.id, rank: res.rank };
+          if (this.sys.isActive()) this.showRank(r);
+          return true;
+        },
+        onSkip: () => undefined,
+      });
+      this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => entry.close());
+    });
+  }
+
+  private showRank(r: RunResult): void {
+    if (!r.board || r.board.id === null) return;
+    const cx = CONFIG.width / 2;
+    const text = r.board.rank ? `World rank #${r.board.rank}` : 'Just missed the world top 51';
+    const t = label(this, cx, 650, text, 32, '#8ef0c8');
+    this.tweens.add({ targets: t, scale: { from: 0.6, to: 1 }, duration: 350, ease: 'Back.Out' });
   }
 }

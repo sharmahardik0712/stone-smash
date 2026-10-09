@@ -9,6 +9,7 @@ import { GameOverScene } from './game/scenes/GameOverScene';
 import { GameScene } from './game/scenes/GameScene';
 import { MenuScene } from './game/scenes/MenuScene';
 import { PauseScene } from './game/scenes/PauseScene';
+import { ScoreboardScene } from './game/scenes/ScoreboardScene';
 import { SettingsScene } from './game/scenes/SettingsScene';
 import { ShopScene } from './game/scenes/ShopScene';
 
@@ -23,7 +24,17 @@ const game = new Phaser.Game({
   render: { antialias: true, powerPreference: 'high-performance' },
   disableContextMenu: true,
   banner: false,
-  scene: [BootScene, MenuScene, GameScene, PauseScene, GameOverScene, ShopScene, SettingsScene, CannonsScene],
+  scene: [
+    BootScene,
+    MenuScene,
+    GameScene,
+    PauseScene,
+    GameOverScene,
+    ShopScene,
+    SettingsScene,
+    CannonsScene,
+    ScoreboardScene,
+  ],
 });
 
 // Silence audio while the tab is hidden; the Game scene also pauses itself.

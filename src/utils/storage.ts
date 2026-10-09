@@ -53,6 +53,7 @@ const KEYS = {
   coins: 'ss.coins',
   upgrades: 'ss.upgrades',
   cannons: 'ss.cannons',
+  name: 'ss.name',
 } as const;
 
 export interface KeyValueStore {
@@ -175,5 +176,13 @@ export class Storage {
   }
   setCannons(c: CannonSave): void {
     this.write(KEYS.cannons, JSON.stringify(c));
+  }
+
+  /** Last name used on the world scoreboard (pre-fills the name box). */
+  getPlayerName(): string {
+    return this.read(KEYS.name) ?? '';
+  }
+  setPlayerName(name: string): void {
+    this.write(KEYS.name, name);
   }
 }

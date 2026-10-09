@@ -24,6 +24,30 @@ Other scripts: `npm run test:bot` (bot tests only), `npm run tune` (difficulty-c
 
 Serve over HTTPS (all of these hosts do). Before going live, check `npm run preview` on a real phone on the same network (it prints a LAN URL).
 
+## World scoreboard (Cloudflare D1)
+
+The top 51 scores worldwide live in a Cloudflare D1 database. `worker/index.ts` serves the game from `dist/` and adds `GET /api/scores` (top 51) and `POST /api/scores` (submit). After each submission only the best 51 rows are kept (ties go to the earlier score). Names are 1-12 letters, numbers or spaces; anything else is rejected on both the game and the server. The table is created automatically on first use.
+
+**One-time setup** (creates the database on your Cloudflare account):
+
+```bash
+npx wrangler d1 create stone-smash-scores
+```
+
+Copy the printed `database_id` into `wrangler.jsonc`, replacing `REPLACE_WITH_YOUR_DATABASE_ID`, then push. Deploys fail until the real id is in place.
+
+**Looking at the data:** Cloudflare dashboard → Storage & Databases → D1 → `stone-smash-scores` (browse, edit, delete rows, run SQL), or from this folder:
+
+```bash
+npx wrangler d1 execute stone-smash-scores --remote --command "SELECT id, name, score, created_at FROM scores ORDER BY score DESC"
+npx wrangler d1 execute stone-smash-scores --remote --command "DELETE FROM scores WHERE id = 7"
+npx wrangler d1 export stone-smash-scores --remote --output scores-backup.sql
+```
+
+The public JSON is also at `/api/scores` on the live site.
+
+**Local testing:** `npm run dev:worker` builds the game and runs it with the API and a local copy of the database at http://localhost:8787 (data persists in `.wrangler/`). `npm run dev` still works for game-only work; scoreboard calls are forwarded to port 8787 when `dev:worker` is running, and otherwise the game just skips the scoreboard.
+
 ## Architecture
 
 - `src/sim/`: pure, deterministic TypeScript. It never imports Phaser, reads the clock, calls `Math.random`, or touches the DOM (ESLint enforces this). `step(world, input, dt)` advances one fixed 60 Hz tick and leaves events in `world.events`. All entities live in fixed-size pools, so `step` does not allocate.

@@ -23,7 +23,7 @@ export class MenuScene extends Phaser.Scene {
     label(this, cx, 520, 'Slide. Smash. Survive.', 34, '#e8f1ff');
 
     if (stats.highScore > 0)
-      label(this, cx, 1080, `Best  ${stats.highScore.toLocaleString('en-US')}`, 36, '#ffe08a');
+      label(this, cx, 112, `Best  ${stats.highScore.toLocaleString('en-US')}`, 30, '#ffe08a');
     label(this, cx, 72, `${app.storage.getCoins()} coins`, 30, '#ffe08a');
 
     // Primary actions in the lower half for one-thumb play.
@@ -51,6 +51,14 @@ export class MenuScene extends Phaser.Scene {
       ...small,
       color: UI.muted,
       shade: 0x6b6f94,
+    });
+
+    new Button(this, cx, 1085, 'World Scoreboard', () => this.scene.start('Scoreboard', { from: 'Menu' }), {
+      width: 440,
+      height: 90,
+      fontSize: 32,
+      color: 0x14b8a6,
+      shade: 0x0b7f74,
     });
 
     // The first tap or key press also unlocks audio.

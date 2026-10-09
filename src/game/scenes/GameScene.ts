@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { BIG, CONFIG, SMALLEST, TIER_NAMES, type CannonDef } from '../../config/gameConfig';
+import { BIG, CONFIG, SMALLEST, TIER_NAMES, type CannonDef, type CannonId } from '../../config/gameConfig';
 import { liveStats, newlyEarned, withUnlocked } from '../../utils/progress';
 import { createWorld, step, type World } from '../../sim/world';
 import { app } from '../app';
@@ -20,6 +20,9 @@ export interface RunResult {
   newBest: boolean;
   /** Cannons unlocked during this run (by reaching their goal). */
   unlocked: CannonDef[];
+  cannon: CannonId;
+  /** Set once the world scoreboard has been checked, so returning to Game Over never asks twice. */
+  board?: { id: number | null; rank: number | null };
 }
 
 const STEP = CONFIG.sim.step;
@@ -257,6 +260,7 @@ export class GameScene extends Phaser.Scene {
       bestCombo: w.score.bestCombo,
       newBest,
       unlocked: this.unlockedThisRun,
+      cannon: w.cannon.def.id,
     };
     this.time.delayedCall(1100, () => this.scene.start('GameOver', result));
   }
