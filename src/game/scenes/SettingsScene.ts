@@ -88,14 +88,7 @@ export class SettingsScene extends Phaser.Scene {
     zone.on('pointerup', () => app.saveSettings());
     zone.on('dragend', () => app.saveSettings());
 
-    label(
-      this,
-      cx,
-      950,
-      'No accounts, no ads, no tracking.\nProgress is saved only on this device.',
-      24,
-      '#c9cdf0',
-    );
+    label(this, cx, 950, 'No accounts needed.\nProgress is saved only on this device.', 24, '#c9cdf0');
 
     new Button(
       this,
