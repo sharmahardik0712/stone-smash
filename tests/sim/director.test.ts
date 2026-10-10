@@ -61,6 +61,17 @@ describe('director', () => {
     }
   });
 
+  it('an empty screen gets a new stone within about a second, even after a giant is bought on credit', () => {
+    const w = createWorld({ seed: 4 });
+    const idle = { targetX: 360, fire: false };
+    step(w, idle, dt); // first stone
+    w.stones.clear(); // player smashed everything
+    w.director.wallet = -500; // deep debt, as after a Titan Rock family
+    const before = w.director.spawned;
+    for (let i = 0; i < Math.ceil((CONFIG.safety.maxEmptySec + 0.1) / dt); i++) step(w, idle, dt);
+    expect(w.director.spawned).toBe(before + 1);
+  });
+
   it('the first stone is a plain big one down the middle', () => {
     const w = createWorld({ seed: 3 });
     step(w, { targetX: 360, fire: false }, dt);

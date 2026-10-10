@@ -179,7 +179,15 @@ export const CONFIG = {
 
   waves: { pressureSec: 20, pressureFactor: 1.1, breatherSec: 8, breatherFactor: 0.4 },
 
-  safety: { maxStonesOnScreen: 30, reachWindowSec: 0.8, reachMaxPx: 360, graceAfterLifeLostSec: 1 },
+  safety: {
+    maxStonesOnScreen: 30,
+    reachWindowSec: 0.8,
+    reachMaxPx: 360,
+    graceAfterLifeLostSec: 1,
+    // Never leave the player waiting: after this long with no stones in play, the next stone comes
+    // at once and any budget debt (e.g. from a giant bought on credit) is forgiven.
+    maxEmptySec: 1,
+  },
 
   unlocks: { goldenAt: 30, bouncyAt: 60, armoredAt: 120, bombAt: 180, goldenChance: 0.03 },
 

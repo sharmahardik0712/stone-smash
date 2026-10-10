@@ -30,6 +30,8 @@ export interface DirectorState {
   biggestTier: Tier;
   /** Tier the next stone must be (the giant that just unlocked), or -1. */
   forceTier: number;
+  /** Seconds the screen has had no stones in play. */
+  emptyFor: number;
 }
 
 export function createDirector(fixedD: number | null): DirectorState {
@@ -53,6 +55,7 @@ export function createDirector(fixedD: number | null): DirectorState {
     lastLifeLostT: -Infinity,
     biggestTier: BIG,
     forceTier: -1,
+    emptyFor: 0,
   };
 }
 
@@ -192,6 +195,10 @@ export function updateDirector(world: World, dt: number): void {
   // While spending is blocked the wallet does not pile up, so there is never a catch-up burst.
   const target = affordAt(dir);
   if (dir.wallet > target) dir.wallet = target;
+
+  // An empty screen has nothing left to pace: send the next stone now and forgive any debt.
+  dir.emptyFor = world.stones.countActive() === 0 ? dir.emptyFor + dt : 0;
+  if (dir.emptyFor >= CONFIG.safety.maxEmptySec && dir.spawned > 0) dir.wallet = target;
 
   if (dir.wallet >= target && canSpawn(world)) {
     const tier = dir.nextTier;
